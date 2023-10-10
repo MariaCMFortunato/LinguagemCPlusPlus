@@ -4,6 +4,8 @@
 #include <conio.h>
 #include <cmath>
 #include <iomanip>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -16,7 +18,7 @@ struct Pessoa{
     char genero;
 };
 
-Pessoa P[5]; // armazena 5 registos
+Pessoa P[100]; // armazena 5 registos
 
 void menu();
 void inserirRegisto();
@@ -25,12 +27,46 @@ void listagemGenero(char genero);
 void listagemIMC();
 void carrega();
 void alterarRegisto();
+void exportar ();
+void exportar1 ();
 
 int main() {
     setlocale(LC_ALL, "Portuguese");
-    carrega();
+    //carrega();
+    string wnif, wpeso, waltura, wgenero; // variáveis temporárias
+    ifstream ficheiro ("funcionarios.csv");
+    if (ficheiro.fail()){
+        cout<<endl<<"Erro na abertura do ficheiro. Prima uma tecla para continuar."<<endl;
+        getch();
+    }
+    else{
+        //carregar os dados do ficheiro para a estrutura
+        int i = 0;
+        while(!ficheiro.eof()){
+            getline(ficheiro, wnif,';');
+            getline(ficheiro, P[i].nome, ';');
+            getline(ficheiro, wpeso, ';');
+            getline(ficheiro, waltura, ';');
+            getline(ficheiro, wgenero);
+
+            stringstream x (wnif);
+            x>>P[i].nif;
+
+            stringstream y (wpeso);
+            y>>P[i].peso;
+
+            stringstream z (waltura);
+            z>>P[i].altura;
+
+            stringstream w (wgenero);
+            w>>P[i].genero;
+
+            i++;
+        }
+    }
+    ficheiro.close();
+
     menu();
-    
     return 0;
 }
 
@@ -45,6 +81,8 @@ void menu(){
     cout<<"4 - Lista de entidades do género feminino"<<endl;
     cout<<"5 - Lista de entidades do com os valores de IMC"<<endl;
     cout<<"6 - Lista geral de entidades"<<endl;
+    cout<<"7 - Exportar para CSV (Overwrite)"<<endl;
+    cout<<"8 - Exportar para CSV (Append)"<<endl;
     cout<<"0 - Sair"<<endl;
     cout<<"------------------------------------------------"<<endl;
     cout<<"Digite a sua escolha: ";
@@ -75,6 +113,14 @@ void menu(){
             listagemGeral();
             menu();
             break;
+        case 7:
+            exportar ();
+            menu();
+            break;
+       case 8:
+            exportar1 ();
+            menu();
+            break;
         case 0: 
             exit(0);//Substitui o return - sair do programa;
     }
@@ -88,7 +134,7 @@ void inserirRegisto(){
     // considerando o nif o campo chave
     cout<<"NIF:";
     cin>>wnif;
-    for(int i = 0; i < 5;i++){
+    for(int i = 0; i < 100;i++){
         if (P[i].nif == 0){
             P[i].nif = wnif;
             // solicitar o resto dos dados
@@ -113,7 +159,7 @@ void listagemGeral(){
     cout<<"Listagem Geral"<<endl;
     cout<<"NIF\t\tNome\t\t\tPeso\tAltura\tGénero"<<endl;
     cout<<"------------------------------------------------";
-    for(int i = 0; i < 5; i++){
+    for(int i = 0; i < 100; i++){
         if (P[i].nif != 0){
             cout<<endl<<P[i].nif;
             cout<<"\t"<<P[i].nome;
@@ -131,7 +177,7 @@ void listagemGenero(char genero){
     cout<<"Listagem do genero "<< genero<<endl;
     cout<<"NIF\t\tNome\t\t\tPeso\tAltura\tGénero"<<endl;
     cout<<"------------------------------------------------";
-    for(int i = 0; i < 5; i++){
+    for(int i = 0; i < 100; i++){
         if (P[i].genero == genero){
             cout<<endl<<P[i].nif;
             cout<<"\t"<<P[i].nome;
@@ -149,7 +195,7 @@ void listagemIMC(){
     cout<<"Listagem Geral com IMC"<<endl;
     cout<<"NIF\t\tNome\t\t\tPeso\tAltura\tGénero\tIMC"<<endl;
     cout<<"------------------------------------------------";
-    for(int i = 0; i < 5; i++){
+    for(int i = 0; i < 100; i++){
         if (P[i].nif != 0){
             cout<<endl<<P[i].nif;
             cout<<"\t"<<P[i].nome;
@@ -196,7 +242,7 @@ void alterarRegisto(){
     bool existe = false;
     cout<<"Digite o NIF: ";
     cin>>wnif;
-    for(int i = 0; i < 5; i++){
+    for(int i = 0; i < 100; i++){
         if (P[i].nif == wnif){
             existe = true;
             cout<<endl<<P[i].nome;
@@ -215,4 +261,34 @@ void alterarRegisto(){
         cout<<endl<<"NIF inexistente. Prima uma tecla para continuar."<<endl;
         getch();
     }
+}
+
+void exportar (){
+    system("cls");
+    cout<<"Exportar os dados para um ficheiro CSV eliminando a informação já existente.";
+    ofstream ficheiro("funcionarios.csv");
+    for(int i = 0; i < 100; i++){
+        if(P[i].nif != 0){
+            ficheiro<<P[i].nif<<';'<<P[i].nome<<';'<<P[i].peso<<';'
+                    <<P[i].altura<<';'<<P[i].genero<<endl;
+        }
+    }
+    ficheiro.close();//fechar ficheiro
+    cout<<endl<<"Exportação efetuada. Prima uma tecla para continuar."<<endl;
+    getch();
+}
+
+void exportar1 (){
+    system("cls");
+    cout<<"Exportar os dados para um ficheiro CSV acrescentando à informação já existente.";
+    ofstream ficheiro("funcionarios.csv", ios::app);
+    for(int i = 0; i < 100; i++){
+        if(P[i].nif != 0){
+            ficheiro<<P[i].nif<<';'<<P[i].nome<<';'<<P[i].peso<<';'
+                    <<P[i].altura<<';'<<P[i].genero<<endl;
+        }
+    }
+    ficheiro.close();//fechar ficheiro
+    cout<<endl<<"Exportação efetuada. Prima uma tecla para continuar."<<endl;
+    getch();
 }
